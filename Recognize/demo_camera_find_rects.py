@@ -26,12 +26,23 @@ def init_camera():
 # 预处理 → 二值化 → 形态学去噪 → 找轮廓 → 几何筛选 → 可视化
 def find_rectangles(img_np):
     """检测矩形轮廓并绘制"""
-# 灰度化 + 模糊（预处理）
-    gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+# 灰度化 + 模糊(预处理)
+    gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)                 # 灰度化适用于只看形状、纹理
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)                     # 模糊化有利于降低噪声,(3,3)->增加细节
 
 # 自适应阈值二值化
-    binary = cv2.adaptiveThreshold(blurred, 255,
+    """
+    def adaptiveThreshold(src: Any, maxValue: Any, adaptiveMethod: int, thresholdType: int, blockSize: int, C: Any, dst: Any = None) -> Any:
+    需要调整的:
+    blockSize:  必须是奇数,值小能抓出细腻的细节,放大噪声;值大抵抗噪声,目标边缘糊掉
+    → 如果画面里目标很大,可以调大(比如15、21),让阈值更稳定.
+    → 如果目标很小很精细,调小(比如7、9),避免被当做背景过滤掉.
+
+    2(C值): "比局部平均亮度低多少才算目标".
+    → 如果背景和目标的对比度很低,想让阈值更宽松(更容易把暗一点的像素判为目标),就减小这个值(比如0或1).
+    → 如果噪声多,想只提取特别暗的目标,就增大(比如5、10),让条件更严格.
+    """
+    binary = cv2.adaptiveThreshold(blurred, 255,                    
                                     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                     cv2.THRESH_BINARY_INV, 11, 2)
 
@@ -45,7 +56,7 @@ def find_rectangles(img_np):
     rect_count = 0
     min_area = 300
 
-# 轮廓筛选与矩形判定（核心）
+# 轮廓筛选与矩形判定(核心)
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area < min_area:
