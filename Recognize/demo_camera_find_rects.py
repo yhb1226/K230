@@ -18,7 +18,7 @@ def init_camera():
     global sensor
     sensor = Sensor(width=1280, height=960, fps=90)                 #默认配置
     sensor.reset()
-    sensor.set_framesize(width=640, height=480)  #调整实际输出尺寸
+    sensor.set_framesize(width=640, height=480)                     #调整实际输出尺寸
     sensor.set_pixformat(Sensor.RGB888)                             #像素格式
     sensor.run()
     time.sleep(0.5)
@@ -39,22 +39,22 @@ def find_rectangles(img_np):
     → 如果目标很小很精细,调小(比如7、9),避免被当做背景过滤掉.
 
     2(C值): "比局部平均亮度低多少才算目标".
-    → 如果背景和目标的对比度很低,想让阈值更宽松(更容易把暗一点的像素判为目标),就减小这个值(比如0或1).
-    → 如果噪声多,想只提取特别暗的目标,就增大(比如5、10),让条件更严格.
+    → 稍微暗一些的目标都提取，减小这个值(比如0或1).
+    → 只提取特别暗的目标,就增大(比如5、10).
     """
     binary = cv2.adaptiveThreshold(blurred, 255,                    
                                     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                     cv2.THRESH_BINARY_INV, 11, 2)
 
 # 形态学闭运算
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))  # 对于二值化后的修补功能，可替换不同形状的"刷子",刷子大小改(5, 5)
     closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
 
 # 查找外部轮廓
-    contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)  #改closed和上一行代码相关
 
     rect_count = 0
-    min_area = 300
+    min_area = 300  #根据下面测试的结果填像素点
 
 # 轮廓筛选与矩形判定(核心)
     for cnt in contours:
@@ -62,10 +62,12 @@ def find_rectangles(img_np):
         if area < min_area:
             continue
 
-        peri = cv2.arcLength(cnt, True)
+        # ------- 形状判定：改这里 -------
+        peri = cv2.arcLength(cnt, True) 
         approx = cv2.approxPolyDP(cnt, 0.03 * peri, True)
-
         if len(approx) == 4:
+        # --------------------------------
+
         # 绘制与标注
             cv2.drawContours(img_np, [approx], -1, (0, 255, 0), 3)
             x, y, w, h = cv2.boundingRect(cnt)
@@ -76,7 +78,7 @@ def find_rectangles(img_np):
 
     return rect_count
 
-# 
+ 
 def main():
     init_camera()
     Display.init(Display.ST7701, width=800, height=480, to_ide=True)
