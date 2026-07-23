@@ -16,31 +16,36 @@ sensor = None
 # 摄像头初始化
 def init_camera():
     global sensor
-    sensor = Sensor(width=1280, height=960, fps=90)
+    sensor = Sensor(width=1280, height=960, fps=90)                 #默认配置
     sensor.reset()
-    sensor.set_framesize(width=DETECT_WIDTH, height=DETECT_HEIGHT)
-    sensor.set_pixformat(Sensor.RGB888)
+    sensor.set_framesize(width=640, height=480)  #调整实际输出尺寸
+    sensor.set_pixformat(Sensor.RGB888)                             #像素格式
     sensor.run()
     time.sleep(0.5)
 
-
+# 预处理 → 二值化 → 形态学去噪 → 找轮廓 → 几何筛选 → 可视化
 def find_rectangles(img_np):
     """检测矩形轮廓并绘制"""
+# 灰度化 + 模糊（预处理）
     gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
+# 自适应阈值二值化
     binary = cv2.adaptiveThreshold(blurred, 255,
                                     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                     cv2.THRESH_BINARY_INV, 11, 2)
 
+# 形态学闭运算
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
 
+# 查找外部轮廓
     contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     rect_count = 0
     min_area = 300
 
+# 轮廓筛选与矩形判定（核心）
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area < min_area:
@@ -50,6 +55,7 @@ def find_rectangles(img_np):
         approx = cv2.approxPolyDP(cnt, 0.03 * peri, True)
 
         if len(approx) == 4:
+        # 绘制与标注
             cv2.drawContours(img_np, [approx], -1, (0, 255, 0), 3)
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(img_np, (x, y), (x + w, y + h), (0, 0, 255), 2)
@@ -59,6 +65,7 @@ def find_rectangles(img_np):
 
     return rect_count
 
+# 
 def main():
     init_camera()
     Display.init(Display.ST7701, width=800, height=480, to_ide=True)
