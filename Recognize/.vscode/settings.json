@@ -3,7 +3,7 @@
         "C:\\Users\\Lenovo\\.kendryte\\k230_canmv_stubs\\db23dc421c63b6f6b3010fd16ad3ac8db57c6f83",
         "${workspaceFolder}"
     ],
-    "python.analysis.stubPath": "C:\\Users\\Lenovo\\.kendryte\\k230_canmv_pylance\\53b6da9dab6d2031\\typings",
+    "python.analysis.stubPath": "C:\\Users\\Lenovo\\.kendryte\\k230_canmv_pylance\\949c092b445531c8\\typings",
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none",
         "reportMissingImports": "none",
