@@ -38,7 +38,7 @@ def camera_deinit():
     global sensor
     # sensor stop run
     sensor.stop()
-    # deinit display
+    
     Display.deinit()
     # sleep
     os.exitpoint(os.EXITPOINT_ENABLE_SLEEP)
