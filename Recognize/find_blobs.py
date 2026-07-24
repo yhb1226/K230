@@ -32,7 +32,6 @@ def camera_init():
     Display.init(Display.ST7701, width=800, height=480, to_ide=True)
 
 
-    # sensor start run
     sensor.run()
 
 def camera_deinit():
