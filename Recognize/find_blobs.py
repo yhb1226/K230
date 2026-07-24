@@ -25,7 +25,7 @@ def camera_init():
     # sensor.set_vflip(False)
 
     # set chn0 output size
-    sensor.set_framesize(width=DETECT_WIDTH,height=DETECT_HEIGHT)
+    sensor.set_framesize(width=640 ,height=480)
     # set chn0 output format
     sensor.set_pixformat(Sensor.RGB565)
     # use IDE as display output
